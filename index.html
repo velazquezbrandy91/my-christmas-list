@@ -45,12 +45,14 @@ function render(){
   a.innerHTML='<div class="actions"><button class="secondary" onclick="setPage(\'people\')">← Back</button></div><div class="hint">Family gets one extra step: choose your relationship to me. 💕</div><div class="grid">'+relations.map(x=>card(x[0],'See the gifts picked for you',x[1],`chooseRelation('${x[0]}')`)).join('')+'</div>';return
  }
  if(state.page==='budgets'){
-  const availableBudgets=DATA.budgets.filter(x=>{
-   if(['friends','nieces','secret'].includes(state.person) && x[0]==='50+') return false;
-   if(state.person==='nieces' && x[0]==='25-50') return false;
-   if(state.person==='secret' && x[0]==='experiences') return false;
-   return true;
-  });
+  const allowedBudgetMap={
+   friends:['homemade','5-10','10-25','experiences'],
+   nieces:['homemade','5-10','10-25','experiences'],
+   secret:['5-10','10-25','25-50']
+  };
+  const allowedKeys=allowedBudgetMap[state.person] || DATA.budgets.map(x=>x[0]);
+  const availableBudgets=DATA.budgets.filter(x=>allowedKeys.includes(x[0]));
+  state.budgets=state.budgets.filter(b=>allowedKeys.includes(b));
   a.innerHTML='<div class="actions"><button class="secondary" onclick="goBackPerson()">← Back</button><button class="primary" onclick="showGifts()">Show My Picks →</button></div><div class="hint">✨ Pick <b>one or more</b> budgets. Selected options disappear from this screen so it is easy to see what you still can choose.'+(state.budgets.length?'<br><button class="secondary" style="margin-top:10px" onclick="state.budgets=[];render()">Clear selected budgets</button>':'')+'</div><div class="grid">'+availableBudgets.filter(x=>!state.budgets.includes(x[0])).map(x=>card(x[2],x[3],x[1],`toggleBudget('${x[0]}')`)).join('')+'</div>'+(state.budgets.length?'<div class="hint" style="margin-top:20px"><b>Selected:</b> '+state.budgets.map(b=>{const x=DATA.budgets.find(y=>y[0]===b);return x?x[2]:b}).join(' • ')+'</div>':'');return
  }
  if(state.page==='gifts'){renderGifts();return}
